@@ -2,14 +2,13 @@ import logging
 import config
 import tweepy
 from tweepy import OAuthHandler
-
+import telegram
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 access_token = 'xxxxxxx'
 access_token_secret = 'xxxxxxx'
@@ -49,6 +48,7 @@ def city(update, context,*args):
     f = open("city.txt", "w")
     f.write(city)
     f.close()
+    
 
 
 def scrapetweets(city,option):
@@ -80,7 +80,7 @@ def button(update: Update, _: CallbackContext) -> None:
     f = open("city.txt", "r")
     city=f.read()
     f.close()
-    
+    bot = telegram.Bot(token=config.http_api)
     link=scrapetweets(city,str(query.data)) 
     query.answer()
 
@@ -88,15 +88,20 @@ def button(update: Update, _: CallbackContext) -> None:
         city='India'
 
     data=""
+    
+    bot.sendMessage(update.effective_user.id,text="𝐅𝐨𝐫 𝐓𝐨𝐩 𝟓 𝐫𝐞𝐬𝐮𝐥𝐭𝐬 𝐮𝐬𝐞 𝐭𝐡𝐞𝐬𝐞 𝐥𝐢𝐧𝐤𝐬:\n")
+    for i in link:
+        bot.sendMessage(update.effective_user.id,text=i)
+
+    
     search=f"https://twitter.com/search?q=verified%20"+city+"%20"+str(query.data)+"%20-'not%20verified'%20-'un%20verified'%20-urgent%20-unverified%20-needed%20-required%20-need%20-needs%20-requirement&f=live"
     
-    for i in link:
-        data+=i+"\n"
-
     data+=search
-    query.edit_message_text(data)
-    
+    bot.sendMessage(update.effective_user.id,text="𝐓𝐨 𝐯𝐢𝐞𝐰 𝐚𝐥𝐥 𝐭𝐡𝐞 𝐫𝐞𝐬𝐮𝐥𝐭𝐬 𝐜𝐥𝐢𝐜𝐤 𝐭𝐡𝐢𝐬 𝐥𝐢𝐧𝐤:\n")
+    bot.sendMessage(update.effective_user.id,text=data)
 
+    
+    
     
 
 def help_command(update: Update, _: CallbackContext) -> None:
@@ -119,6 +124,6 @@ def main() -> None:
 
 if __name__ == '__main__':
     f = open("city.txt", "w")
-    f.write('%20')
+    f.write('')
     f.close()
     main()
